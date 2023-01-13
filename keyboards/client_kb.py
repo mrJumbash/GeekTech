@@ -7,11 +7,11 @@ start_markup = ReplyKeyboardMarkup(
 )
 
 start_button = KeyboardButton("/start")
-info_button = KeyboardButton("/info")
+dice_button = KeyboardButton("/dice")
 quiz_button = KeyboardButton("/quiz")
 
 share_location = KeyboardButton("Share location", request_location=True)
 share_contact = KeyboardButton("Share contact", request_contact=True)
 
-start_markup.add(start_button, info_button, quiz_button,
+start_markup.add(start_button, dice_button, quiz_button,
                  share_location, share_contact)
