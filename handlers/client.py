@@ -15,7 +15,11 @@ async def start_handler(message: types.Message):
 async def quiz(message: types.Message):
     markup = InlineKeyboardMarkup()
     button_call_1 = InlineKeyboardButton('NEXT', callback_data='button_call_1')
-    markup.add(button_call_1)
+    button_call_2 = InlineKeyboardButton('NEXT-2', callback_data='button_call_2')
+    button_call_3 = InlineKeyboardButton('NEXT-3', callback_data='button_call_3')
+
+    markup.add(button_call_1, button_call_2, button_call_3)
+
 
     question = "By whom invented Rust?"
     answers = [
