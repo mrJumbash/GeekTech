@@ -1,15 +1,7 @@
 from aiogram import types, Dispatcher
 from config import bot, ADMINS
-from random import choice
 
-async def game(message: types.Message):
-    if message.from_user.id in ADMINS:
-        emoji_list = ['⚽️', '🏀', '🎲', '🎰', '🎯', '🎳']
-        emoji = choice(emoji_list)
-        if message.text == 'game':
-            await bot.send_dice(message.chat.id, emoji=emoji)
-    else:
-        await message.answer('U dont have permission')
+
 
 async def dice_game(message: types.Message):
     if message.from_user.id in ADMINS:
@@ -50,8 +42,8 @@ async def pin(message: types.Message):
     else:
         await message.answer("Пиши в группу!")
 
+
 def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(ban, commands=['ban'], commands_prefix='!/')
     dp.register_message_handler(pin, commands=['pin'], commands_prefix='!/')
     dp.register_message_handler(dice_game, commands=['dice'], commands_prefix='!/')
-    dp.register_message_handler(game)
