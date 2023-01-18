@@ -3,12 +3,13 @@ from config import bot, ADMINS
 from random import choice
 
 async def echo(message: types.Message):
-    bad_words = ['java', 'html', 'дурак', "дура"]
+    bad_words = ['сабина', 'алдияр', 'дурак', "дура", "сука", "бля", "наса"]
     username = f"@{message.from_user.username}" \
         if message.from_user.username is not None else message.from_user.first_name
     for word in bad_words:
         if word in message.text.lower().replace(' ', ''):
             # DRY - Don't Repeat Yourself
+            await message.delete()
             await message.answer(f"Не матерись {username}"
                                  f" сам ты {word}!")
     if message.from_user.id in ADMINS:
