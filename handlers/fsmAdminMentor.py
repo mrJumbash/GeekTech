@@ -82,17 +82,30 @@ async def load_age(message: types.Message, state: FSMContext):
 async def load_group(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['group'] = message.text
-        await message.answer(
-            f'''
-    ID: {data['id']}, \n
+        python_photo = open('media/pythonlogo.jpg', 'rb')
+        designer_photo = open('media/uxuilogo.jpg', 'rb')
+        js_photo = open('media/JavaScript-logo.png', 'rb')
+        java_photo = open('media/javalogo.png', 'rb')
+        caption = f'''
+        ID: {data['id']}, \n
 Name: {data['name']}, \n
 Direction: {data['direction']}, \n
 Age: {data['age']}, \n
 Group: {data['group']}
-            '''
-        )
-    await FSMAdmin.next()
-    await message.answer("Все верно?", reply_markup=submit_markup)
+                '''
+
+        if data['direction'] == 'BACKEND':
+            await message.answer_photo(photo=python_photo, caption=caption)
+        elif data['direction'] == 'FRONTEND':
+            await message.answer_photo(photo=js_photo, caption=caption)
+        elif data['direction'] == 'ANDROID':
+            await message.answer_photo(photo=java_photo, caption=caption)
+        else:
+            await message.answer_photo(photo=designer_photo, caption=caption)
+
+
+        await FSMAdmin.next()
+        await message.answer("Все верно?", reply_markup=submit_markup)
 
 async def submit(message: types.Message, state: FSMContext):
     if message.text.lower() == "да":
