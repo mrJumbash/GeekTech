@@ -2,8 +2,9 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from uuid import uuid4
+from database.bot_db import sql_command_insert
 from keyboards.client_kb import submit_markup, cancel_markup, direction_markup
-from id_generator import id_gen
 from config import ADMINS
 
 class FSMAdmin(StatesGroup):
@@ -11,7 +12,7 @@ class FSMAdmin(StatesGroup):
     name = State()
     direction = State()
     age = State()
-    group = State()
+    mgroup = State()
     submit = State()
 
 async def fsm_start(message: types.Message):
@@ -25,7 +26,7 @@ async def fsm_start(message: types.Message):
 
 async def load_id(message: types.Message, state: FSMContext):
     if message.text.lower() == "да":
-        mentors_id = id_gen()
+        mentors_id = str(uuid4())
         async with state.proxy() as data:
             # Проверка в БД на сходство id если есть сходство запустить еще раз (64 000 000 айдишек)
             data['id'] = mentors_id
@@ -34,7 +35,7 @@ async def load_id(message: types.Message, state: FSMContext):
     elif message.text.lower() == "нет":
         await state.finish()
     else:
-        await message.answer("Нипонял!?")
+        await message.answer("Нипонял!?")   
 
 async def load_name(message: types.Message, state: FSMContext):
     num = False
@@ -79,9 +80,9 @@ async def load_age(message: types.Message, state: FSMContext):
                 await message.answer("Доступ воспрещен!")
     except ValueError:
         await message.answer("Числа брат, числа")
-async def load_group(message: types.Message, state: FSMContext):
+async def load_mgroup(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['group'] = message.text
+        data['mgroup'] = message.text
         python_photo = open('media/pythonlogo.jpg', 'rb')
         designer_photo = open('media/uxuilogo.jpg', 'rb')
         js_photo = open('media/JavaScript-logo.png', 'rb')
@@ -91,7 +92,7 @@ async def load_group(message: types.Message, state: FSMContext):
 Name: {data['name']}, \n
 Direction: {data['direction']}, \n
 Age: {data['age']}, \n
-Group: {data['group']}
+Group: {data['mgroup']}
                 '''
 
         if data['direction'] == 'BACKEND':
@@ -109,7 +110,7 @@ Group: {data['group']}
 
 async def submit(message: types.Message, state: FSMContext):
     if message.text.lower() == "да":
-        # Запись в БД
+        await sql_command_insert(state)
         await state.finish()
     elif message.text.lower() == "нет":
         await state.finish()
@@ -133,5 +134,5 @@ def register_handlers_mentor(dp: Dispatcher):
     dp.register_message_handler(load_name, state=FSMAdmin.name)
     dp.register_message_handler(load_direction, state=FSMAdmin.direction)
     dp.register_message_handler(load_age, state=FSMAdmin.age)
-    dp.register_message_handler(load_group, state=FSMAdmin.group)
+    dp.register_message_handler(load_mgroup, state=FSMAdmin.mgroup)
     dp.register_message_handler(submit, state=FSMAdmin.submit)

@@ -2,10 +2,12 @@ from config import bot, ADMINS
 from aiogram import types, Dispatcher
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.client_kb import start_markup
+from database.bot_db import sql_command_random
 
 async def start_handler(message: types.Message):
     await bot.send_message(message.from_user.id,  f'Hello, {message.from_user.first_name}',
                            reply_markup=start_markup)
+
 
     # await message.answer('This is answer method!')
     #
@@ -51,6 +53,10 @@ async def quiz(message: types.Message):
 #     await message.answer_photo(open('/home/kuba/Pictures/villager.jpeg', 'rb'), caption="MineVillagerStonks")
 #     # await message.delete()
 
+async def get_random_user(message: types.Message):
+    await sql_command_random(message)
+
 def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(start_handler, commands='start')
     dp.register_message_handler(quiz, commands='quiz')
+    dp.register_message_handler(get_random_user, commands=['get'])
