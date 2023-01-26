@@ -1,6 +1,6 @@
 from config import dp, ADMINS, bot
 from aiogram.utils import executor
-from handlers import callback, client, admin, extra, fsmAdminMentor, fsm_anketa
+from handlers import callback, client, admin, extra, fsmAdminMentor, fsm_anketa, notification
 import logging
 from database.bot_db import sql_create
 
@@ -14,6 +14,7 @@ fsm_anketa.register_handlers_anketa(dp)
 client.register_handlers_client(dp)
 callback.register_handlers_callback(dp)
 admin.register_handlers_admin(dp)
+notification.register_handler_notification(dp)
 
 extra.register_handlers_extra(dp)
 
