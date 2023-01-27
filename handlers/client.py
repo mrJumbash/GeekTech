@@ -3,7 +3,7 @@ from aiogram import types, Dispatcher
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.client_kb import start_markup
 from database.bot_db import sql_command_random
-
+from parser.allcomics import parser
 async def start_handler(message: types.Message):
     await bot.send_message(message.from_user.id,  f'Hello, {message.from_user.first_name}',
                            reply_markup=start_markup)
@@ -44,6 +44,17 @@ async def quiz(message: types.Message):
         reply_markup=markup,
     )
 
+async def get_comic(message: types.Message):
+    comics = parser()
+    for i in comics:
+        src = i['photo']
+        await bot.send_photo(message.from_user.id,
+            photo=src,
+            caption=
+            f"❤️Title: {i['title']}❤️\n\n"
+            f"⭐️{i['rate']}⭐️\n"
+            f"Link: {i['link']}"
+        )
 
 # async def start_command(message: types.Message):
 #     await message.answer_photo(open('/home/kuba/Pictures/shrek.jpeg', 'rb'), caption="Shrek")
@@ -60,3 +71,4 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(start_handler, commands='start')
     dp.register_message_handler(quiz, commands='quiz')
     dp.register_message_handler(get_random_user, commands=['get'])
+    dp.register_message_handler(get_comic, commands=['comic'])
