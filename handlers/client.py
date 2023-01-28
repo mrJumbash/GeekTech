@@ -1,9 +1,13 @@
+from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.dispatcher import FSMContext
 from config import bot, ADMINS
 from aiogram import types, Dispatcher
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from keyboards.client_kb import start_markup
+from keyboards.client_kb import start_markup, cancel_markup
 from database.bot_db import sql_command_random
 from parser.allcomics import parser
+from parser.kaktus import news_parser
+
 async def start_handler(message: types.Message):
     await bot.send_message(message.from_user.id,  f'Hello, {message.from_user.first_name}',
                            reply_markup=start_markup)
@@ -56,6 +60,44 @@ async def get_comic(message: types.Message):
             f"Link: {i['link']}"
         )
 
+class FSMAdmin(StatesGroup):
+    start = State()
+    info = State()
+
+
+
+async def start_kaktus(message: types.Message):
+    if message.chat.type == 'private':
+        await FSMAdmin.start.set()
+        await message.answer("Начнем", reply_markup=cancel_markup)
+    else:
+        await message.answer("Пиши в личку!")
+
+async def loading(message: types.Message):
+    global news
+    news = news_parser()
+    for info in news:
+        markup = InlineKeyboardMarkup(
+            resize_keyboard=True,
+            one_time_keyboard=True).add(
+            InlineKeyboardButton(text=f"Time: {info['time']}", callback_data=f'callback{info["time"]}')
+        )
+        await bot.send_message(message.from_user.id, info['title'], reply_markup=markup)
+        await FSMAdmin.next()
+
+async def sending(call: types.CallbackQuery):
+    for i in news:
+        src = i['photo']
+        await bot.send_photo(call.from_user.id, photo=src, caption=
+            f'Link: {i["link"]}\n\n'
+            f'Title: {i["title"]}'
+            )
+
+
+
+
+
+
 # async def start_command(message: types.Message):
 #     await message.answer_photo(open('/home/kuba/Pictures/shrek.jpeg', 'rb'), caption="Shrek")
 #     await message.delete()
@@ -71,4 +113,10 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(start_handler, commands='start')
     dp.register_message_handler(quiz, commands='quiz')
     dp.register_message_handler(get_random_user, commands=['get'])
+    '''ДЗ'''
     dp.register_message_handler(get_comic, commands=['comic'])
+    """Проблема с этим"""
+    dp.register_message_handler(start_kaktus, commands=['kaktus'])
+    dp.register_message_handler(loading, state=FSMAdmin.start)
+    dp.register_callback_query_handler(sending,
+                                       lambda call: call.data and call.data.startswith("Time: "), state=FSMAdmin.info)

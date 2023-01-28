@@ -42,3 +42,4 @@ def parser():
         return comics
     else:
         raise Exception("Error in parser!")
+
