@@ -6,8 +6,9 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.client_kb import start_markup, cancel_markup
 from database.bot_db import sql_command_random
 from parser.allcomics import parser
-from parser.kaktus import news_parser
-
+from parser.kaktus import new_parser
+from config import PAYMENT
+from aiogram.types.message import ContentType
 async def start_handler(message: types.Message):
     await bot.send_message(message.from_user.id,  f'Hello, {message.from_user.first_name}',
                            reply_markup=start_markup)
@@ -75,7 +76,7 @@ async def start_kaktus(message: types.Message):
 
 async def loading(message: types.Message):
     global news
-    news = news_parser()
+    news = new_parser()
     for info in news:
         markup = InlineKeyboardMarkup(
             resize_keyboard=True,
@@ -105,6 +106,36 @@ async def sending(call: types.CallbackQuery):
 # async def start_command(message: types.Message):
 #     await message.answer_photo(open('/home/kuba/Pictures/villager.jpeg', 'rb'), caption="MineVillagerStonks")
 #     # await message.delete()
+PRICE = types.LabeledPrice(label='Подписка на 1 месяц', amount=500*100)
+
+
+async def buy(message: types.Message):
+    await bot.send_message(message.chat.id, 'Тестовый платеж')
+
+    await bot.send_invoice(message.chat.id,
+                           title='Подписка на бота',
+                           provider_token=PAYMENT,
+                           currency='rub',
+                           description='Активация',
+                           photo_url='https://pythonru.com/wp-content/uploads/2018/12/random-module-icon.png',
+                           photo_width=416,
+                           photo_height=234,
+                           is_flexible=False,
+                           prices=[PRICE],
+                           start_parameter='one-month-sub',
+                           payload='test-payload')
+
+# async def pre_checkout_query(pre_check_q: types.PreCheckoutQuery):
+#     await bot.answer_pre_checkout_query(pre_check_q.id, ok=True)
+
+async def success(message: types.Message):
+    print('ПЛАТЕЖ УСПЕШНО ПРОВЕДЕН!')
+    payment_info = message.successful_payment.to_python()
+    for k, v in payment_info:
+        print(f'{k} = {v}')
+
+    await bot.send_message(message.chat.id, f'Платеж на сумму{message.successful_payment.total_amount // 100} '
+                                            f'{message.successful_payment.currency} проведен')
 
 async def get_random_user(message: types.Message):
     await sql_command_random(message)
@@ -120,3 +151,6 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(loading, state=FSMAdmin.start)
     dp.register_callback_query_handler(sending,
                                        lambda call: call.data and call.data.startswith("Time: "), state=FSMAdmin.info)
+    dp.register_message_handler(buy, commands=['buy'])
+    # dp.pre_checkout_query_handlers(pre_checkout_query)
+    dp.register_message_handler(success)
